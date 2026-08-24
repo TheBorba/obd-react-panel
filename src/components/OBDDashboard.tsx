@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useOBDSimulator } from '@/hooks/useOBDSimulator';
 import { useBluetoothOBD } from '@/hooks/useBluetoothOBD';
 import { RPMGauge, SpeedGauge, TemperatureGauge, LinearGauge } from './Gauge/Gauge';
@@ -6,7 +6,7 @@ import { Car, Bluetooth, Wifi, Battery, Thermometer, Gauge as GaugeIcon, Fuel } 
 import { OBDMetrics } from '@/types/obd';
 
 export function OBDDashboard() {
-  const [isMockMode, setIsMockMode] = useState(true);
+  const [isMockMode, setIsMockMode] = useState(false);
   const [selectedPIDs, setSelectedPIDs] = useState<string[]>([
     '010C', // RPM
     '010D', // Speed

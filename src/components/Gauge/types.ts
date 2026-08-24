@@ -29,9 +29,9 @@ export interface GaugeColors {
 }
 
 export interface GaugeConfig {
-  type: GaugeType;
-  width: number;
-  height: number;
+  type?: GaugeType;
+  width?: number;
+  height?: number;
   minValue: number;
   maxValue: number;
   majorTicks: number;
@@ -42,6 +42,11 @@ export interface GaugeConfig {
   animationSpeed: number;
   colors: GaugeColors;
 }
+
+export type GaugeColorsPartial = Partial<GaugeColors> & {
+  needle?: Partial<NeedleColors>;
+  valueBox?: Partial<ValueBoxColors>;
+};
 
 export interface Point {
   x: number;

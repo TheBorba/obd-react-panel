@@ -1,4 +1,3 @@
-import React from 'react';
 import { OBDDashboard } from './components/OBDDashboard';
 import './App.css';
 
