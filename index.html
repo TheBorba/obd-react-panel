@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web OBD-II Dashboard | Real-time Vehicle Telemetry</title>
     <meta name="description" content="Real-time OBD-II vehicle telemetry dashboard using Web Bluetooth API. Monitor RPM, speed, temperature, and more.">
@@ -53,7 +52,7 @@
     
     <!-- Main app container -->
     <div id="root"></div>
-    
+
     <!-- Remove loading screen when app loads -->
     <script>
       window.addEventListener('load', () => {
@@ -68,5 +67,7 @@
         }, 1000);
       });
     </script>
+
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

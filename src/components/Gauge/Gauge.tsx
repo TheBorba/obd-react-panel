@@ -1,14 +1,16 @@
-import React, { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import { GaugeCanvas } from './GaugeCanvas';
-import { GaugeConfig, GaugeType } from './types';
+import { GaugeConfig, GaugeType, GaugeColorsPartial } from './types';
 
-export interface GaugeProps extends Partial<GaugeConfig> {
+
+export interface GaugeProps extends Partial<Omit<GaugeConfig, 'colors'>> {
   value: number;
   type?: GaugeType;
   width?: number;
   height?: number;
   className?: string;
   onRender?: (canvas: HTMLCanvasElement) => void;
+  colors?: GaugeColorsPartial;
 }
 
 const DEFAULT_CONFIG: GaugeConfig = {
@@ -54,7 +56,7 @@ export const Gauge = memo(function Gauge({
 }: GaugeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gaugeRef = useRef<GaugeCanvas | null>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number>(0);
   const lastValueRef = useRef(value);
   const targetValueRef = useRef(value);
 

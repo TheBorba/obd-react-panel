@@ -2,48 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { OBDMetrics, ConnectionStatus, BluetoothDeviceInfo } from '@/types/obd';
 import { OBD_SERVICES, parseOBDResponse, ELM327_INIT_SEQUENCE, getPIDCommand } from '@/utils/obdParser';
 
-// Type declarations for Web Bluetooth API
-declare global {
-  interface Navigator {
-    bluetooth: {
-      requestDevice(options: BluetoothRequestDeviceOptions): Promise<BluetoothDevice>;
-    };
-  }
-  
-  interface BluetoothDevice extends EventTarget {
-    id: string;
-    name?: string;
-    gatt?: BluetoothRemoteGATTServer;
-    addEventListener(type: 'gattserverdisconnected', listener: () => void): void;
-  }
-  
-  interface BluetoothRemoteGATTServer {
-    connect(): Promise<BluetoothRemoteGATTServer>;
-    disconnect(): void;
-    connected: boolean;
-    getPrimaryService(uuid: string): Promise<BluetoothRemoteGATTService>;
-  }
-  
-  interface BluetoothRemoteGATTService {
-    getCharacteristic(uuid: string): Promise<BluetoothRemoteGATTCharacteristic>;
-  }
-  
-  interface BluetoothRemoteGATTCharacteristic extends EventTarget {
-    value?: DataView;
-    writeValue(data: BufferSource): Promise<void>;
-    startNotifications(): Promise<void>;
-    addEventListener(type: 'characteristicvaluechanged', listener: (event: Event) => void): void;
-    removeEventListener(type: 'characteristicvaluechanged', listener: (event: Event) => void): void;
-  }
-  
-  interface BluetoothRequestDeviceOptions {
-    filters: BluetoothRequestDeviceFilter[];
-    optionalServices: string[];
-  }
-  
-  interface BluetoothRequestDeviceFilter {
-    namePrefix?: string;
-  }
+
+interface BluetoothRequestDeviceFilter {
+  namePrefix?: string;
 }
 
 export interface BluetoothOBDConfig {

@@ -15,7 +15,7 @@ export class GaugeCanvas {
   }
 
   private calculateDimensions(): GaugeDimensions {
-    const { width, height, type, minValue, maxValue } = this.config;
+    const { width = 300, height = 300, type = 'radial', minValue, maxValue } = this.config;
     
     if (type === 'radial' || type === 'arc') {
       const centerX = width / 2;
@@ -99,7 +99,7 @@ export class GaugeCanvas {
 
   private drawTicks(): void {
     const { centerX, centerY, radius, startAngle, endAngle, valueRange } = this.dimensions;
-    const { colors, majorTicks, minorTicks, minValue, maxValue } = this.config;
+    const { colors, majorTicks, minorTicks, minValue } = this.config;
 
     // Major ticks
     for (let i = 0; i <= majorTicks; i++) {
@@ -137,7 +137,7 @@ export class GaugeCanvas {
 
   private drawNumbers(): void {
     const { centerX, centerY, radius, startAngle, endAngle, valueRange } = this.dimensions;
-    const { colors, majorTicks, minValue, maxValue } = this.config;
+    const { colors, majorTicks, minValue } = this.config;
 
     this.ctx.font = `${radius * 0.12}px Arial`;
     this.ctx.fillStyle = colors.numbers;

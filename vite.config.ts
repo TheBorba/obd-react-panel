@@ -22,8 +22,21 @@ export default defineConfig({
       '@types': resolve(__dirname, './src/types'),
     },
   },
-  server: {
+    server: {
     host: true,
     port: 5173,
+  },
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    setupFiles: ['./src/tests/setup.ts'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@components': resolve(__dirname, './src/components'),
+      '@hooks': resolve(__dirname, './src/hooks'),
+      '@utils': resolve(__dirname, './src/utils'),
+      '@types': resolve(__dirname, './src/types'),
+    },
   },
 })
