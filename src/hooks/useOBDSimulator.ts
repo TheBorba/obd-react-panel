@@ -191,8 +191,8 @@ function roundForDisplay(metrics: SimulatorMetrics): SimulatorMetrics {
  *   - keeps the effective update rate at the true 20 Hz, giving smooth gauge
  *     needle animation.
  *
- * drivingMode is also kept in React state so the <OBDDashboard> can display
- * it, but it is read by the interval via the metrics ref.
+ * drivingMode is also kept in React state so a panel (e.g. DefaultPanel) can
+ * display it, but it is read by the interval via the metrics ref.
  */
 export function useOBDSimulator(
   isMocking: boolean,

@@ -1,85 +1,38 @@
-import { useState, useEffect } from 'react';
-import { useOBDSimulator } from '@/hooks/useOBDSimulator';
-import { useBluetoothOBD } from '@/hooks/useBluetoothOBD';
-import { RPMGauge, SpeedGauge, TemperatureGauge, LinearGauge } from './Gauge/Gauge';
-import { Car, Bluetooth, Wifi, Battery, Thermometer, Gauge as GaugeIcon, Fuel } from 'lucide-react';
-import { OBDMetrics } from '@/types/obd';
+import {
+  Car,
+  Bluetooth,
+  Wifi,
+  Battery,
+  Thermometer,
+  Gauge as GaugeIcon,
+  Fuel,
+} from 'lucide-react';
+import { RPMGauge, SpeedGauge, TemperatureGauge, LinearGauge } from '@/components/Gauge/Gauge';
+import type { PanelProps } from './types';
 
-export function OBDDashboard() {
-  const [isMockMode, setIsMockMode] = useState(false);
-  const [selectedPIDs, setSelectedPIDs] = useState<string[]>([
-    '010C', // RPM
-    '010D', // Speed
-    '0104', // Engine Load
-    '0105', // Coolant Temp
-    '0111', // Throttle Position
-    '012F', // Fuel Level
-  ]);
-
-  // Mock data simulator
-  const mockData = useOBDSimulator(isMockMode, {
-    drivingMode: 'city',
-    maxRpm: 8000,
-    updateInterval: 50,
-  });
-
-  // Real Bluetooth OBD data
-  const {
-    metrics: bluetoothData,
-    connectionStatus,
-    connectedDevice,
-    error,
-    isSupported,
-    connect,
-    disconnect,
-  } = useBluetoothOBD({
-    pidsToPoll: selectedPIDs,
-    pollingInterval: 150,
-  });
-
-  // Use mock data when in mock mode, otherwise use Bluetooth data
-  const activeData: OBDMetrics & { gear?: number; drivingMode?: string } = isMockMode 
-    ? mockData 
-    : bluetoothData;
-
-  // Auto-switch to mock mode if Bluetooth is not supported
-  useEffect(() => {
-    if (!isSupported && !isMockMode) {
-      setIsMockMode(true);
-    }
-  }, [isSupported, isMockMode]);
-
-  // Handle mode toggle
-  const handleModeToggle = () => {
-    if (isMockMode) {
-      // Switching from mock to real
-      if (!isSupported) {
-        alert('Web Bluetooth is not supported in this browser. Please use Chrome/Edge.');
-        return;
-      }
-      setIsMockMode(false);
-      connect();
-    } else {
-      // Switching from real to mock
-      setIsMockMode(true);
-      disconnect();
-    }
-  };
-
-  // Handle PID selection
-  const handlePIDToggle = (pid: string) => {
-    setSelectedPIDs(prev => 
-      prev.includes(pid) 
-        ? prev.filter(p => p !== pid)
-        : [...prev, pid]
-    );
-  };
-
-  // Connection status display
+/**
+ * "default" theme.
+ *
+ * The classic multi-gauge OBD-II dashboard, refactored from the monolithic
+ * component into a pure presentational view driven by the shared
+ * `PanelProps` contract (see useDashboardData).
+ */
+export function DefaultPanel({
+  metrics,
+  isMockMode,
+  connectionStatus,
+  connectedDevice,
+  error,
+  selectedPIDs,
+  togglePID,
+  toggleMode,
+}: PanelProps) {
+  // Connection status display helpers
   const getConnectionStatusColor = () => {
     switch (connectionStatus) {
       case 'connected': return 'bg-green-500';
       case 'connecting': return 'bg-yellow-500';
+      case 'initializing': return 'bg-yellow-500';
       case 'error': return 'bg-red-500';
       default: return 'bg-gray-500';
     }
@@ -118,7 +71,7 @@ export function OBDDashboard() {
 
             {/* Mode Toggle */}
             <button
-              onClick={handleModeToggle}
+              onClick={toggleMode}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
                 isMockMode
                   ? 'bg-blue-600 hover:bg-blue-700'
@@ -145,11 +98,11 @@ export function OBDDashboard() {
           <div className={`px-3 py-1 rounded-full text-sm font-medium ${
             isMockMode ? 'bg-yellow-900 text-yellow-200' : 'bg-green-900 text-green-200'
           }`}>
-            {isMockMode ? `Mock Mode: ${mockData.drivingMode}` : 'Live Bluetooth Mode'}
+            {isMockMode ? `Mock Mode: ${metrics.drivingMode}` : 'Live Bluetooth Mode'}
           </div>
-          {isMockMode && mockData.gear && (
+          {isMockMode && metrics.gear && (
             <div className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium">
-              Gear: {mockData.gear}
+              Gear: {metrics.gear}
             </div>
           )}
         </div>
@@ -164,9 +117,9 @@ export function OBDDashboard() {
               <GaugeIcon className="w-5 h-5 text-red-400" />
               <h2 className="text-xl font-semibold">Engine RPM</h2>
             </div>
-            <span className="text-2xl font-bold text-red-400">{activeData.rpm}</span>
+            <span className="text-2xl font-bold text-red-400">{metrics.rpm}</span>
           </div>
-          <RPMGauge value={activeData.rpm} width={300} height={200} />
+          <RPMGauge value={metrics.rpm} width={300} height={200} />
         </div>
 
         {/* Speed Gauge */}
@@ -176,9 +129,9 @@ export function OBDDashboard() {
               <Car className="w-5 h-5 text-blue-400" />
               <h2 className="text-xl font-semibold">Vehicle Speed</h2>
             </div>
-            <span className="text-2xl font-bold text-blue-400">{activeData.speed} km/h</span>
+            <span className="text-2xl font-bold text-blue-400">{metrics.speed} km/h</span>
           </div>
-          <SpeedGauge value={activeData.speed} width={300} height={200} />
+          <SpeedGauge value={metrics.speed} width={300} height={200} />
         </div>
 
         {/* Temperature Gauge */}
@@ -188,19 +141,19 @@ export function OBDDashboard() {
               <Thermometer className="w-5 h-5 text-orange-400" />
               <h2 className="text-xl font-semibold">Coolant Temperature</h2>
             </div>
-            <span className="text-2xl font-bold text-orange-400">{activeData.coolantTemp}°C</span>
+            <span className="text-2xl font-bold text-orange-400">{metrics.coolantTemp}°C</span>
           </div>
-          <TemperatureGauge value={activeData.coolantTemp} width={300} height={200} />
+          <TemperatureGauge value={metrics.coolantTemp} width={300} height={200} />
         </div>
 
         {/* Engine Load */}
         <div className="bg-gray-800 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Engine Load</h2>
-            <span className="text-2xl font-bold text-green-400">{activeData.engineLoad}%</span>
+            <span className="text-2xl font-bold text-green-400">{metrics.engineLoad}%</span>
           </div>
-          <LinearGauge 
-            value={activeData.engineLoad}
+          <LinearGauge
+            value={metrics.engineLoad}
             minValue={0}
             maxValue={100}
             units="%"
@@ -221,10 +174,10 @@ export function OBDDashboard() {
         <div className="bg-gray-800 rounded-2xl p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Throttle Position</h2>
-            <span className="text-2xl font-bold text-purple-400">{activeData.throttlePos}%</span>
+            <span className="text-2xl font-bold text-purple-400">{metrics.throttlePos}%</span>
           </div>
-          <LinearGauge 
-            value={activeData.throttlePos}
+          <LinearGauge
+            value={metrics.throttlePos}
             minValue={0}
             maxValue={100}
             units="%"
@@ -248,10 +201,10 @@ export function OBDDashboard() {
               <Fuel className="w-5 h-5 text-yellow-400" />
               <h2 className="text-xl font-semibold">Fuel Level</h2>
             </div>
-            <span className="text-2xl font-bold text-yellow-400">{activeData.fuelLevel}%</span>
+            <span className="text-2xl font-bold text-yellow-400">{metrics.fuelLevel}%</span>
           </div>
-          <LinearGauge 
-            value={activeData.fuelLevel}
+          <LinearGauge
+            value={metrics.fuelLevel}
             minValue={0}
             maxValue={100}
             units="%"
@@ -276,7 +229,7 @@ export function OBDDashboard() {
             <Battery className="w-4 h-4 text-green-400" />
             <span className="text-sm text-gray-400">Voltage</span>
           </div>
-          <div className="text-2xl font-bold">{activeData.voltage?.toFixed(1) || '13.8'}V</div>
+          <div className="text-2xl font-bold">{metrics.voltage?.toFixed(1) || '13.8'}V</div>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-4">
@@ -284,7 +237,7 @@ export function OBDDashboard() {
             <Thermometer className="w-4 h-4 text-cyan-400" />
             <span className="text-sm text-gray-400">Intake Temp</span>
           </div>
-          <div className="text-2xl font-bold">{activeData.intakeTemp || '25'}°C</div>
+          <div className="text-2xl font-bold">{metrics.intakeTemp || '25'}°C</div>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-4">
@@ -292,7 +245,7 @@ export function OBDDashboard() {
             <GaugeIcon className="w-4 h-4 text-pink-400" />
             <span className="text-sm text-gray-400">MAF</span>
           </div>
-          <div className="text-2xl font-bold">{activeData.maf?.toFixed(1) || '12.5'} g/s</div>
+          <div className="text-2xl font-bold">{metrics.maf?.toFixed(1) || '12.5'} g/s</div>
         </div>
 
         <div className="bg-gray-800 rounded-xl p-4">
@@ -300,7 +253,7 @@ export function OBDDashboard() {
             <GaugeIcon className="w-4 h-4 text-indigo-400" />
             <span className="text-sm text-gray-400">Timing Advance</span>
           </div>
-          <div className="text-2xl font-bold">{activeData.timingAdvance?.toFixed(1) || '12.0'}°</div>
+          <div className="text-2xl font-bold">{metrics.timingAdvance?.toFixed(1) || '12.0'}°</div>
         </div>
       </div>
 
@@ -325,7 +278,7 @@ export function OBDDashboard() {
               <input
                 type="checkbox"
                 checked={checked}
-                onChange={() => handlePIDToggle(pid)}
+                onChange={() => togglePID(pid)}
                 className="sr-only"
               />
               <span className="font-medium">{label}</span>
@@ -338,7 +291,7 @@ export function OBDDashboard() {
       {/* Footer */}
       <footer className="mt-8 pt-6 border-t border-gray-700 text-center text-gray-500 text-sm">
         <p>
-          {isMockMode 
+          {isMockMode
             ? 'Currently using simulated data. Connect a real ELM327 Bluetooth OBD-II adapter for live telemetry.'
             : 'Connected to real vehicle data via Web Bluetooth API.'
           }
